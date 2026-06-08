@@ -1,0 +1,95 @@
+import {
+  Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy
+} from '@angular/core';
+import { FinancialService } from '../../services/financial.service';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
+
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.page.html',
+  styleUrls: ['./dashboard.page.scss'],
+})
+export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('flowChart') flowChartRef!: ElementRef;
+
+  currentMonth = '';
+  summary = { totalIncome: 0, totalExpenses: 0, totalPaid: 0, totalPending: 0, balance: 0 };
+  debtPercentage = 0;
+  pendingItems: any[] = [];
+  private chart: Chart | null = null;
+
+  constructor(private fin: FinancialService) {}
+
+  ngOnInit() {
+    this.currentMonth = this.fin.getCurrentMonth();
+    this.loadData();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => this.buildChart(), 400);
+  }
+
+  ngOnDestroy() {
+    this.chart?.destroy();
+  }
+
+  ionViewWillEnter() {
+    this.loadData();
+    if (this.chart) this.buildChart();
+  }
+
+  loadData() {
+    this.summary = this.fin.getMonthlySummary(this.currentMonth);
+    this.debtPercentage = this.summary.totalIncome > 0
+      ? Math.min(100, Math.round((this.summary.totalExpenses / this.summary.totalIncome) * 100))
+      : 0;
+
+    const accounts = this.fin.getAccounts();
+    this.pendingItems = this.fin.getTransactions(this.currentMonth)
+      .filter(t => t.status === 'pending' && t.kind === 'expense')
+      .map(t => ({ ...t, account_name: accounts.find(a => a.id === t.account_id)?.name || '' }))
+      .slice(0, 5);
+  }
+
+  buildChart() {
+    const el = this.flowChartRef?.nativeElement;
+    if (!el) return;
+
+    const months = this.getLast6Months();
+    const incomes  = months.map(m => this.fin.getMonthlySummary(m).totalIncome);
+    const expenses = months.map(m => this.fin.getMonthlySummary(m).totalExpenses);
+
+    this.chart?.destroy();
+    this.chart = new Chart(el, {
+      type: 'bar',
+      data: {
+        labels: months.map(m => this.fin.formatMonth(m)),
+        datasets: [
+          { label: 'Receita',  data: incomes,  backgroundColor: '#40916c88' },
+          { label: 'Despesa', data: expenses, backgroundColor: '#e6394666' },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true, position: 'bottom' } },
+        scales: { y: { beginAtZero: true, ticks: { callback: (v) => 'R$' + v } } },
+      },
+    });
+  }
+
+  getLast6Months(): string[] {
+    const months: string[] = [];
+    const d = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(d.getFullYear(), d.getMonth() - i, 1);
+      months.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
+    }
+    return months;
+  }
+
+  get formattedMonth() { return this.fin.formatMonth(this.currentMonth); }
+
+  fmt(v: number) { return this.fin.formatCurrency(v); }
+}

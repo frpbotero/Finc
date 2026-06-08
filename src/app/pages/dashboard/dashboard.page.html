@@ -1,0 +1,83 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Meu Cenário Financeiro</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="page-pad">
+    <p class="month-lbl">{{ formattedMonth }}</p>
+
+    <!-- Saldo principal -->
+    <ion-card class="balance-card">
+      <ion-card-content>
+        <div class="balance-grid">
+          <div class="bi income">
+            <span class="lbl">Receita</span>
+            <span class="val">{{ fmt(summary.totalIncome) }}</span>
+          </div>
+          <div class="bi expense">
+            <span class="lbl">Despesas</span>
+            <span class="val">{{ fmt(summary.totalExpenses) }}</span>
+          </div>
+          <div class="bi" [class.positive]="summary.balance >= 0" [class.negative]="summary.balance < 0">
+            <span class="lbl">Saldo</span>
+            <span class="val">{{ fmt(summary.balance) }}</span>
+          </div>
+          <div class="bi warn">
+            <span class="lbl">Comprometido</span>
+            <span class="val">{{ debtPercentage }}%</span>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Pago vs A pagar -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Situação do mês</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="status-row">
+          <span class="status-lbl">Pago</span>
+          <span class="status-val paid">{{ fmt(summary.totalPaid) }}</span>
+        </div>
+        <div class="status-row">
+          <span class="status-lbl">A pagar</span>
+          <span class="status-val pending">{{ fmt(summary.totalPending) }}</span>
+        </div>
+        <div class="prog-wrap" *ngIf="summary.totalExpenses > 0">
+          <div class="prog-fill"
+            [style.width]="(summary.totalPaid / summary.totalExpenses * 100) + '%'"></div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Próximos a pagar -->
+    <ion-card *ngIf="pendingItems.length > 0">
+      <ion-card-header>
+        <ion-card-subtitle>A Pagar</ion-card-subtitle>
+      </ion-card-header>
+      <ion-list lines="none">
+        <ion-item *ngFor="let t of pendingItems">
+          <ion-icon name="alert-circle-outline" slot="start" color="warning"></ion-icon>
+          <ion-label>
+            <h3>{{ t.account_name }}</h3>
+            <p *ngIf="t.notes">{{ t.notes }}</p>
+          </ion-label>
+          <ion-note slot="end" color="danger">{{ fmt(t.amount) }}</ion-note>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+
+    <!-- Gráfico -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Evolução 6 meses</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <canvas #flowChart></canvas>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
