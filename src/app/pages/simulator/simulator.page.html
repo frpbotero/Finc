@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Simulador</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Simular quitação</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item>
+          <ion-label position="stacked">Dívida</ion-label>
+          <ion-select [(ngModel)]="selectedId" placeholder="Selecione" interface="action-sheet">
+            <ion-select-option *ngFor="let d of debts" [value]="d.id">
+              {{ d.account_name }} — {{ fmt(d.current_balance) }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Valor disponível (R$)</ion-label>
+          <ion-input [(ngModel)]="payoffAmount" type="number" placeholder="Ex: 2000" inputmode="decimal"></ion-input>
+        </ion-item>
+      </ion-list>
+      <ion-button expand="block" (click)="simulate()" [disabled]="!selectedId || !payoffAmount">
+        Simular
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Resultado -->
+  <ion-card *ngIf="result" class="result-card">
+    <ion-card-header>
+      <ion-card-title>{{ result.debtName }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="rr"><span>Saldo atual</span>        <span class="danger">{{ fmt(selected?.current_balance ?? 0) }}</span></div>
+      <div class="rr"><span>Saldo após</span>         <span class="success">{{ fmt(result.newBalance) }}</span></div>
+      <div class="rr hi"><span>Parcelas economizadas</span><span>{{ result.installmentsSaved }}x</span></div>
+      <div class="rr hi"><span>Economia total</span>      <span class="success">{{ fmt(result.totalSaved) }}</span></div>
+      <div class="rr"><span>Quitação atual</span>     <span>{{ result.currentEndMonth }}</span></div>
+      <div class="rr"><span>Nova quitação</span>     <span class="success">{{ result.newEndMonth }}</span></div>
+
+      <ion-button expand="block" color="success" (click)="apply()" style="margin-top:16px">
+        <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+        Aplicar pagamento
+      </ion-button>
+      <ion-button expand="block" fill="clear" (click)="result = null">Cancelar</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="debts.length === 0" class="empty">
+    <ion-icon name="calculator-outline" color="medium"></ion-icon>
+    <p>Nenhuma dívida cadastrada.<br>Vá para "Dívidas" e adicione uma.</p>
+  </div>
+</ion-content>

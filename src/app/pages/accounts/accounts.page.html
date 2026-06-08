@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Contas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="confirmNewAccount()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngFor="let group of groupedAccounts">
+    <ion-list-header>
+      <ion-label>
+        <ion-icon [name]="group.icon" class="grp-icon"></ion-icon>
+        {{ group.label }}
+      </ion-label>
+    </ion-list-header>
+
+    <ion-list>
+      <ion-item-sliding *ngFor="let account of group.items">
+        <ion-item button (click)="editTx(account)">
+          <ion-label>
+            <h3>{{ account.name }}</h3>
+            <p *ngIf="account.due_day">Vence dia {{ account.due_day }}</p>
+          </ion-label>
+          <div slot="end" class="acct-end">
+            <span class="amt" [class.filled]="getAmount(account.id) > 0">
+              {{ getAmount(account.id) > 0 ? fmt(getAmount(account.id)) : '—' }}
+            </span>
+            <ion-badge *ngIf="getStatus(account.id) === 'paid'"    color="success">Pago</ion-badge>
+            <ion-badge *ngIf="getStatus(account.id) === 'pending'" color="warning">Pendente</ion-badge>
+          </div>
+        </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option *ngIf="getStatus(account.id)" color="success" (click)="togglePaid(account)">
+            <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="deleteAccount(account)">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+  </div>
+
+  <div *ngIf="groupedAccounts.length === 0" class="empty">
+    <ion-icon name="albums-outline" color="medium"></ion-icon>
+    <p>Nenhuma conta cadastrada.</p>
+    <ion-button (click)="confirmNewAccount()">Adicionar conta</ion-button>
+  </div>
+</ion-content>

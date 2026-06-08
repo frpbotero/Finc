@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Fluxo Mensal</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Seletor de mês -->
+  <div class="month-nav">
+    <ion-button fill="clear" (click)="shift(-1)">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+    </ion-button>
+    <span class="month-txt">{{ formattedMonth }}</span>
+    <ion-button fill="clear" (click)="shift(1)">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+  </div>
+
+  <!-- Resumo 2x2 -->
+  <div class="grid2">
+    <ion-card class="mini-card">
+      <ion-card-content>
+        <div class="mini-lbl">Receita</div>
+        <div class="mini-val income">{{ fmt(summary.totalIncome) }}</div>
+      </ion-card-content>
+    </ion-card>
+    <ion-card class="mini-card">
+      <ion-card-content>
+        <div class="mini-lbl">Despesas</div>
+        <div class="mini-val expense">{{ fmt(summary.totalExpenses) }}</div>
+      </ion-card-content>
+    </ion-card>
+    <ion-card class="mini-card">
+      <ion-card-content>
+        <div class="mini-lbl">Pago</div>
+        <div class="mini-val paid">{{ fmt(summary.totalPaid) }}</div>
+      </ion-card-content>
+    </ion-card>
+    <ion-card class="mini-card">
+      <ion-card-content>
+        <div class="mini-lbl">A pagar</div>
+        <div class="mini-val pending">{{ fmt(summary.totalPending) }}</div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Diferença -->
+  <ion-card [class.pos]="summary.balance >= 0" [class.neg]="summary.balance < 0">
+    <ion-card-content class="diff-row">
+      <span class="diff-lbl">Diferença</span>
+      <span class="diff-val">{{ fmt(summary.balance) }}</span>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Receitas -->
+  <ion-list-header>
+    <ion-label>Receitas</ion-label>
+    <ion-button slot="end" fill="clear" size="small" (click)="addIncome()">
+      <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+    </ion-button>
+  </ion-list-header>
+  <ion-list>
+    <ion-item-sliding *ngFor="let i of incomes">
+      <ion-item>
+        <ion-label><h3>{{ i.description }}</h3></ion-label>
+        <ion-note slot="end" color="success">{{ fmt(i.amount) }}</ion-note>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteIncome(i.id)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+    <ion-item *ngIf="incomes.length === 0">
+      <ion-label color="medium"><i>Nenhuma receita</i></ion-label>
+    </ion-item>
+  </ion-list>
+
+  <!-- Despesas -->
+  <ion-list-header><ion-label>Despesas</ion-label></ion-list-header>
+  <ion-list>
+    <ion-item *ngFor="let t of expenses" button (click)="toggleStatus(t)">
+      <ion-icon
+        slot="start"
+        [name]="t.status === 'paid' ? 'checkmark-circle' : 'ellipse-outline'"
+        [color]="t.status === 'paid' ? 'success' : 'medium'">
+      </ion-icon>
+      <ion-label>
+        <h3>{{ t.account_name }}</h3>
+        <p *ngIf="t.notes">{{ t.notes }}</p>
+      </ion-label>
+      <ion-note slot="end" [color]="t.status === 'paid' ? 'medium' : 'danger'">
+        {{ fmt(t.amount) }}
+      </ion-note>
+    </ion-item>
+    <ion-item *ngIf="expenses.length === 0">
+      <ion-label color="medium"><i>Nenhuma despesa lançada</i></ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div style="height:16px"></div>
+</ion-content>

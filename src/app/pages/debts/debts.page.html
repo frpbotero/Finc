@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Dívidas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="addDebt()">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Totais -->
+  <ion-card class="total-card" *ngIf="debts.length > 0">
+    <ion-card-content>
+      <div class="total-row">
+        <div class="ti">
+          <span class="ti-lbl">Total em dívidas</span>
+          <span class="ti-val danger">{{ fmt(totalDebt) }}</span>
+        </div>
+        <div class="ti">
+          <span class="ti-lbl">Parcelas/mês</span>
+          <span class="ti-val warn">{{ fmt(totalInstallment) }}</span>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Cards de dívida -->
+  <ion-card *ngFor="let debt of debts">
+    <ion-card-header>
+      <ion-card-title>{{ debt.account_name }}</ion-card-title>
+      <ion-card-subtitle>Quitação: {{ debt.end_month }}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <div class="dr"><span>Valor original</span><span>{{ fmt(debt.original_amount) }}</span></div>
+      <div class="dr"><span>Saldo atual</span><span class="danger">{{ fmt(debt.current_balance) }}</span></div>
+      <div class="dr"><span>Parcela</span><span>{{ fmt(debt.installment_amount) }}</span></div>
+      <div class="dr"><span>Restantes</span><span>{{ debt.remaining_installments }}x</span></div>
+      <div class="dr" *ngIf="debt.interest_rate > 0"><span>Juros</span><span>{{ debt.interest_rate }}% a.m.</span></div>
+
+      <div class="prog-sect">
+        <div class="prog-info">
+          <span>Quitado</span>
+          <span>{{ progress(debt) | number:'1.0-0' }}%</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-fill" [style.width]="progress(debt) + '%'"></div>
+        </div>
+      </div>
+
+      <ion-button fill="clear" color="danger" size="small" (click)="deleteDebt(debt)">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        Remover
+      </ion-button>
+    </ion-card-content>
+  </ion-card>
+
+  <div *ngIf="debts.length === 0" class="empty">
+    <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+    <p>Nenhuma dívida cadastrada</p>
+    <ion-button (click)="addDebt()">Adicionar dívida</ion-button>
+  </div>
+</ion-content>

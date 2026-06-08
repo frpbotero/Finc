@@ -1,0 +1,24 @@
+ion-list-header {
+  --min-height: 36px;
+  .grp-icon { margin-right: 6px; vertical-align: middle; }
+}
+
+.acct-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.amt {
+  font-size: 13px;
+  color: var(--ion-color-medium);
+  &.filled { color: var(--ion-color-danger); font-weight: 600; }
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 16px;
+  ion-icon { font-size: 56px; margin-bottom: 12px; }
+  p { color: var(--ion-color-medium); }
+}
