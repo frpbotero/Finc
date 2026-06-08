@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:gh-pages": "ng build --base-href /Finc/",
     "test": "ng test",
     "lint": "ng lint"
   },
