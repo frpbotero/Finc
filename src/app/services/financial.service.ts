@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Account, Transaction, Debt, Income } from '../models/models';
+import { Account, Transaction, Debt, Income, FinancialAccount } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class FinancialService {
   private readonly ACCOUNTS_KEY = 'mcf_accounts';
+  private readonly FINANCIAL_ACCOUNTS_KEY = 'mcf_financial_accounts';
   private readonly TRANSACTIONS_KEY = 'mcf_transactions';
   private readonly DEBTS_KEY = 'mcf_debts';
   private readonly INCOMES_KEY = 'mcf_incomes';
@@ -39,6 +40,20 @@ export class FinancialService {
     return cleanDebt;
   }
 
+  private removeViewFieldsFromTransaction(t: Transaction): Omit<Transaction, 'account_name' | 'financial_account_name'> {
+    const {
+      account_name: _accountName,
+      financial_account_name: _financialAccountName,
+      ...cleanTransaction
+    } = t;
+    return cleanTransaction;
+  }
+
+  private resolveFinancialAccountName(financialAccounts: FinancialAccount[], id?: string): string | undefined {
+    if (!id) return undefined;
+    return financialAccounts.find(a => a.id === id)?.name || 'Conta removida';
+  }
+
   // ---- Accounts ----
 
   getAccounts(): Account[] {
@@ -71,14 +86,55 @@ export class FinancialService {
     this.accountsSubject.next(accounts);
   }
 
+  // ---- Financial Accounts ----
+
+  getFinancialAccounts(): FinancialAccount[] {
+    return this.getAll<FinancialAccount>(this.FINANCIAL_ACCOUNTS_KEY);
+  }
+
+  saveFinancialAccount(account: Omit<FinancialAccount, 'id'>): FinancialAccount {
+    const accounts = this.getFinancialAccounts();
+    const newAccount: FinancialAccount = { ...account, id: this.generateId() };
+    accounts.push(newAccount);
+    this.saveAll(this.FINANCIAL_ACCOUNTS_KEY, accounts);
+    return newAccount;
+  }
+
+  updateFinancialAccount(account: FinancialAccount) {
+    const accounts = this.getFinancialAccounts().map(a => a.id === account.id ? account : a);
+    this.saveAll(this.FINANCIAL_ACCOUNTS_KEY, accounts);
+  }
+
+  deleteFinancialAccount(id: string) {
+    const accounts = this.getFinancialAccounts().filter(a => a.id !== id);
+    const transactions = this.getAll<Transaction>(this.TRANSACTIONS_KEY).map(t =>
+      t.financial_account_id === id ? { ...t, financial_account_id: undefined } : t
+    );
+    const recurringAccounts = this.getAccounts().map(a =>
+      a.financial_account_id === id ? { ...a, financial_account_id: undefined } : a
+    );
+
+    this.saveAll(this.FINANCIAL_ACCOUNTS_KEY, accounts);
+    this.saveAll(this.TRANSACTIONS_KEY, transactions);
+    this.saveAll(this.ACCOUNTS_KEY, recurringAccounts);
+    this.accountsSubject.next(recurringAccounts);
+  }
+
   // ---- Transactions ----
 
   getTransactions(month?: string): Transaction[] {
     const all = this.getAll<Transaction>(this.TRANSACTIONS_KEY);
-    return month ? all.filter(t => t.month === month) : all;
+    const accounts = this.getAccounts();
+    const financialAccounts = this.getFinancialAccounts();
+    const withNames = all.map(t => ({
+      ...t,
+      account_name: accounts.find(a => a.id === t.account_id)?.name || 'Conta removida',
+      financial_account_name: this.resolveFinancialAccountName(financialAccounts, t.financial_account_id),
+    }));
+    return month ? withNames.filter(t => t.month === month) : withNames;
   }
 
-  saveTransaction(t: Omit<Transaction, 'id' | 'account_name'>): Transaction {
+  saveTransaction(t: Omit<Transaction, 'id' | 'account_name' | 'financial_account_name'>): Transaction {
     const transactions = this.getAll<Transaction>(this.TRANSACTIONS_KEY);
     const newT: Transaction = { ...t, id: this.generateId() };
     transactions.push(newT);
@@ -87,7 +143,7 @@ export class FinancialService {
   }
 
   updateTransaction(t: Transaction) {
-    const { account_name: _accountName, ...cleanTransaction } = t;
+    const cleanTransaction = this.removeViewFieldsFromTransaction(t);
     const all = this.getAll<Transaction>(this.TRANSACTIONS_KEY);
     const updated = all.map(x => x.id === t.id ? { ...cleanTransaction } : x);
     this.saveAll(this.TRANSACTIONS_KEY, updated);
@@ -96,6 +152,36 @@ export class FinancialService {
   deleteTransaction(id: string) {
     const all = this.getAll<Transaction>(this.TRANSACTIONS_KEY).filter(t => t.id !== id);
     this.saveAll(this.TRANSACTIONS_KEY, all);
+  }
+
+  ensureMonthlyRecurringTransactions(month: string): Transaction[] {
+    const accounts = this.getAccounts().filter(a => a.active && Number(a.default_amount || 0) > 0);
+    const transactions = this.getAll<Transaction>(this.TRANSACTIONS_KEY);
+    const generated: Transaction[] = [];
+
+    for (const account of accounts) {
+      const exists = transactions.some(t => t.month === month && t.account_id === account.id);
+      if (exists) continue;
+
+      const isIncome = account.type === 'income';
+      const transaction: Transaction = {
+        id: this.generateId(),
+        account_id: account.id,
+        financial_account_id: account.financial_account_id,
+        month,
+        amount: Number(account.default_amount || 0),
+        status: isIncome ? 'paid' : 'pending',
+        kind: isIncome ? 'income' : 'expense',
+        notes: isIncome ? 'Receita recorrente' : 'Despesa fixa recorrente',
+        generated_from_recurring: true,
+      };
+
+      transactions.push(transaction);
+      generated.push(transaction);
+    }
+
+    if (generated.length) this.saveAll(this.TRANSACTIONS_KEY, transactions);
+    return generated;
   }
 
   // ---- Debts ----

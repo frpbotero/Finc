@@ -1,7 +1,14 @@
 import { Component } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { FinancialService } from '../../services/financial.service';
-import { Income, Transaction } from '../../models/models';
+import { Transaction } from '../../models/models';
+
+interface IncomeRow {
+  id: string;
+  description: string;
+  amount: number;
+  source: 'manual' | 'recurring';
+}
 
 @Component({
   selector: 'app-monthly-flow',
@@ -11,8 +18,8 @@ import { Income, Transaction } from '../../models/models';
 export class MonthlyFlowPage {
   currentMonth = '';
   summary = { totalIncome: 0, totalExpenses: 0, totalPaid: 0, totalPending: 0, balance: 0 };
-  incomes: Income[] = [];
-  expenses: any[] = [];
+  incomes: IncomeRow[] = [];
+  expenses: Transaction[] = [];
 
   constructor(private fin: FinancialService, private alert: AlertController) {}
 
@@ -22,12 +29,25 @@ export class MonthlyFlowPage {
   }
 
   load() {
+    this.fin.ensureMonthlyRecurringTransactions(this.currentMonth);
     this.summary = this.fin.getMonthlySummary(this.currentMonth);
-    this.incomes = this.fin.getIncomes(this.currentMonth);
-    const accounts = this.fin.getAccounts();
-    this.expenses = this.fin.getTransactions(this.currentMonth)
-      .filter(t => t.kind === 'expense')
-      .map(t => ({ ...t, account_name: accounts.find(a => a.id === t.account_id)?.name ?? '' }));
+    const manualIncomes = this.fin.getIncomes(this.currentMonth).map(i => ({
+      id: i.id,
+      description: i.description,
+      amount: i.amount,
+      source: 'manual' as const,
+    }));
+    const recurringIncomes = this.fin.getTransactions(this.currentMonth)
+      .filter(t => t.kind === 'income')
+      .map(t => ({
+        id: t.id,
+        description: t.account_name || 'Receita recorrente',
+        amount: t.amount,
+        source: 'recurring' as const,
+      }));
+
+    this.incomes = [...manualIncomes, ...recurringIncomes];
+    this.expenses = this.fin.getTransactions(this.currentMonth).filter(t => t.kind === 'expense');
   }
 
   shift(delta: number) {
@@ -37,7 +57,7 @@ export class MonthlyFlowPage {
     this.load();
   }
 
-  toggleStatus(t: Transaction & { account_name: string }) {
+  toggleStatus(t: Transaction) {
     this.fin.updateTransaction({ ...t, status: t.status === 'paid' ? 'pending' : 'paid' });
     this.load();
   }
@@ -65,7 +85,11 @@ export class MonthlyFlowPage {
     await a.present();
   }
 
-  deleteIncome(id: string) { this.fin.deleteIncome(id); this.load(); }
+  deleteIncome(income: IncomeRow) {
+    if (income.source !== 'manual') return;
+    this.fin.deleteIncome(income.id);
+    this.load();
+  }
 
   get formattedMonth() { return this.fin.formatMonth(this.currentMonth); }
   fmt(v: number) { return this.fin.formatCurrency(v); }

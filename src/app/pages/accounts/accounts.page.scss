@@ -3,6 +3,19 @@ ion-list-header {
   .grp-icon { margin-right: 6px; vertical-align: middle; }
 }
 
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 12px 4px;
+
+  ion-button {
+    margin: 0;
+    min-height: 40px;
+    text-transform: none;
+  }
+}
+
 .acct-end {
   display: flex;
   flex-direction: column;
@@ -14,6 +27,16 @@ ion-list-header {
   font-size: 13px;
   color: var(--ion-color-medium);
   &.filled { color: var(--ion-color-danger); font-weight: 600; }
+  &.income.filled { color: var(--ion-color-success); }
+}
+
+.linked-account {
+  color: var(--ion-color-medium);
+  font-size: 12px;
+}
+
+.hint-item {
+  margin-bottom: 8px;
 }
 
 .empty {

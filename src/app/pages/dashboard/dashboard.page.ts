@@ -2,6 +2,7 @@ import {
   Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy
 } from '@angular/core';
 import { FinancialService } from '../../services/financial.service';
+import { Transaction } from '../../models/models';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -17,7 +18,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   currentMonth = '';
   summary = { totalIncome: 0, totalExpenses: 0, totalPaid: 0, totalPending: 0, balance: 0 };
   debtPercentage = 0;
-  pendingItems: any[] = [];
+  pendingItems: Transaction[] = [];
   private chart: Chart | null = null;
 
   constructor(private fin: FinancialService) {}
@@ -41,15 +42,14 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadData() {
+    this.fin.ensureMonthlyRecurringTransactions(this.currentMonth);
     this.summary = this.fin.getMonthlySummary(this.currentMonth);
     this.debtPercentage = this.summary.totalIncome > 0
       ? Math.min(100, Math.round((this.summary.totalExpenses / this.summary.totalIncome) * 100))
       : 0;
 
-    const accounts = this.fin.getAccounts();
     this.pendingItems = this.fin.getTransactions(this.currentMonth)
       .filter(t => t.status === 'pending' && t.kind === 'expense')
-      .map(t => ({ ...t, account_name: accounts.find(a => a.id === t.account_id)?.name || '' }))
       .slice(0, 5);
   }
 

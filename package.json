@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "build:gh-pages": "ng build --base-href /Finc/",
+    "start": "ng serve app",
+    "build": "ng build app",
+    "build:gh-pages": "ng build app --base-href /Finc/",
     "test": "ng test",
     "lint": "ng lint"
   },
@@ -26,6 +26,7 @@
     "@capacitor/status-bar": "^6.0.0",
     "@ionic/angular": "^8.0.0",
     "chart.js": "^4.4.0",
+    "ionicons": "^8.0.13",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "xlsx": "^0.18.5",

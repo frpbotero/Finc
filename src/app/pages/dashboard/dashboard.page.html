@@ -63,7 +63,10 @@
           <ion-icon name="alert-circle-outline" slot="start" color="warning"></ion-icon>
           <ion-label>
             <h3>{{ t.account_name }}</h3>
-            <p *ngIf="t.notes">{{ t.notes }}</p>
+            <p>
+              <span *ngIf="t.notes">{{ t.notes }}</span>
+              <span *ngIf="t.financial_account_name"> · {{ t.financial_account_name }}</span>
+            </p>
           </ion-label>
           <ion-note slot="end" color="danger">{{ fmt(t.amount) }}</ion-note>
         </ion-item>
