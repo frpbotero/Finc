@@ -13,7 +13,6 @@ export class FinancialService {
   accounts$ = this.accountsSubject.asObservable();
 
   constructor() {
-    this.seedIfEmpty();
     this.accountsSubject.next(this.getAll<Account>(this.ACCOUNTS_KEY));
   }
 
@@ -24,7 +23,8 @@ export class FinancialService {
   private getAll<T>(key: string): T[] {
     try {
       const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : [];
+      const parsed: unknown = data ? JSON.parse(data) : [];
+      return Array.isArray(parsed) ? parsed as T[] : [];
     } catch {
       return [];
     }
@@ -32,6 +32,11 @@ export class FinancialService {
 
   private saveAll<T>(key: string, items: T[]) {
     localStorage.setItem(key, JSON.stringify(items));
+  }
+
+  private removeViewFieldsFromDebt(debt: Debt): Omit<Debt, 'account_name'> {
+    const { account_name: _accountName, ...cleanDebt } = debt;
+    return cleanDebt;
   }
 
   // ---- Accounts ----
@@ -57,7 +62,12 @@ export class FinancialService {
 
   deleteAccount(id: string) {
     const accounts = this.getAccounts().filter(a => a.id !== id);
+    const transactions = this.getAll<Transaction>(this.TRANSACTIONS_KEY).filter(t => t.account_id !== id);
+    const debts = this.getAll<Debt>(this.DEBTS_KEY).filter(d => d.account_id !== id);
+
     this.saveAll(this.ACCOUNTS_KEY, accounts);
+    this.saveAll(this.TRANSACTIONS_KEY, transactions);
+    this.saveAll(this.DEBTS_KEY, debts);
     this.accountsSubject.next(accounts);
   }
 
@@ -77,8 +87,9 @@ export class FinancialService {
   }
 
   updateTransaction(t: Transaction) {
+    const { account_name: _accountName, ...cleanTransaction } = t;
     const all = this.getAll<Transaction>(this.TRANSACTIONS_KEY);
-    const updated = all.map(x => x.id === t.id ? { ...t } : x);
+    const updated = all.map(x => x.id === t.id ? { ...cleanTransaction } : x);
     this.saveAll(this.TRANSACTIONS_KEY, updated);
   }
 
@@ -94,7 +105,7 @@ export class FinancialService {
     const accounts = this.getAccounts();
     return debts.map(d => ({
       ...d,
-      account_name: accounts.find(a => a.id === d.account_id)?.name || 'Conta'
+      account_name: accounts.find(a => a.id === d.account_id)?.name || 'Conta removida'
     }));
   }
 
@@ -107,7 +118,8 @@ export class FinancialService {
   }
 
   updateDebt(d: Debt) {
-    const all = this.getAll<Debt>(this.DEBTS_KEY).map(x => x.id === d.id ? { ...d } : x);
+    const cleanDebt = this.removeViewFieldsFromDebt(d);
+    const all = this.getAll<Debt>(this.DEBTS_KEY).map(x => x.id === d.id ? cleanDebt : x);
     this.saveAll(this.DEBTS_KEY, all);
   }
 
@@ -131,6 +143,12 @@ export class FinancialService {
     return newI;
   }
 
+  updateIncome(income: Income) {
+    const all = this.getAll<Income>(this.INCOMES_KEY);
+    const updated = all.map(i => i.id === income.id ? income : i);
+    this.saveAll(this.INCOMES_KEY, updated);
+  }
+
   deleteIncome(id: string) {
     const all = this.getAll<Income>(this.INCOMES_KEY).filter(i => i.id !== id);
     this.saveAll(this.INCOMES_KEY, all);
@@ -143,20 +161,20 @@ export class FinancialService {
     const incomes = this.getIncomes(month);
 
     const totalIncome =
-      incomes.reduce((s, i) => s + i.amount, 0) +
-      transactions.filter(t => t.kind === 'income').reduce((s, t) => s + t.amount, 0);
+      incomes.reduce((s, i) => s + Number(i.amount || 0), 0) +
+      transactions.filter(t => t.kind === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
 
     const totalExpenses = transactions
       .filter(t => t.kind === 'expense')
-      .reduce((s, t) => s + t.amount, 0);
+      .reduce((s, t) => s + Number(t.amount || 0), 0);
 
     const totalPaid = transactions
       .filter(t => t.kind === 'expense' && t.status === 'paid')
-      .reduce((s, t) => s + t.amount, 0);
+      .reduce((s, t) => s + Number(t.amount || 0), 0);
 
     const totalPending = transactions
       .filter(t => t.kind === 'expense' && t.status === 'pending')
-      .reduce((s, t) => s + t.amount, 0);
+      .reduce((s, t) => s + Number(t.amount || 0), 0);
 
     return { totalIncome, totalExpenses, totalPaid, totalPending, balance: totalIncome - totalExpenses };
   }
@@ -168,46 +186,20 @@ export class FinancialService {
 
   formatMonth(month: string): string {
     const [year, m] = month.split('-');
+    const monthIndex = Number(m) - 1;
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    return `${months[parseInt(m) - 1]}/${year}`;
+
+    if (!year || monthIndex < 0 || monthIndex > 11) return month;
+    return `${months[monthIndex]}/${year}`;
   }
 
   formatCurrency(value: number): string {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
   addEndMonths(fromMonth: string, count: number): string {
     const [y, m] = fromMonth.split('-').map(Number);
     const d = new Date(y, m - 1 + count, 1);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-  }
-
-  private seedIfEmpty() {
-    if (this.getAccounts().length > 0) return;
-
-    const month = this.getCurrentMonth();
-
-    const salary  = this.saveAccount({ name: 'Salário', type: 'income', active: true });
-    const rent    = this.saveAccount({ name: 'Aluguel', type: 'fixed', due_day: 5, active: true });
-    const card    = this.saveAccount({ name: 'Cartão Nubank', type: 'card', due_day: 15, active: true });
-    const loan    = this.saveAccount({ name: 'Financiamento Auto', type: 'loan', active: true });
-    const market  = this.saveAccount({ name: 'Mercado / Supermercado', type: 'fixed', active: true });
-
-    this.saveIncome({ month, description: 'Salário', amount: 5000, recurring: true });
-
-    this.saveTransaction({ account_id: rent.id,   month, amount: 1200, status: 'paid',    kind: 'expense', notes: 'Aluguel' });
-    this.saveTransaction({ account_id: card.id,   month, amount: 850,  status: 'pending', kind: 'expense', notes: 'Fatura' });
-    this.saveTransaction({ account_id: market.id, month, amount: 600,  status: 'paid',    kind: 'expense', notes: 'Mensal' });
-
-    this.saveDebt({
-      account_id: loan.id,
-      original_amount: 30000,
-      current_balance: 18000,
-      installment_amount: 850,
-      remaining_installments: 24,
-      interest_rate: 1.2,
-      start_month: '2024-01',
-      end_month: this.addEndMonths(month, 24)
-    });
   }
 }
