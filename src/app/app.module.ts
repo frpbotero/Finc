@@ -33,8 +33,6 @@ import {
   trashOutline,
   trendingUpOutline,
   walletOutline,
-  closeOutline,
-  settingsOutline,
 } from 'ionicons/icons';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
