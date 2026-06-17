@@ -81,19 +81,19 @@ export class GeminiService {
     if (accounts.length) {
       parts.push(`\nDespesas/contas (${accounts.length}):`);
       accounts.slice(0, 12).forEach(a =>
-        parts.push(`  - ${a.name}: ${fmt(a.amount)}${a.category ? ` [${a.category}]` : ''}`));
+        parts.push(`  - ${a.name}: ${a.default_amount ? fmt(a.default_amount) : 'valor variável'}${a.category ? ` [${a.category}]` : ''}`));
     }
 
     if (debts.length) {
       parts.push(`\nDívidas (${debts.length}):`);
       debts.slice(0, 6).forEach(d =>
-        parts.push(`  - ${d.creditor}: ${fmt(d.amount)} total, ${d.installments_remaining ?? '?'} parcelas restantes`));
+        parts.push(`  - ${d.account_name ?? d.account_id}: saldo ${fmt(d.current_balance)}, parcela ${fmt(d.installment_amount)}, ${d.remaining_installments} restantes`));
     }
 
     if (incomes.length) {
       parts.push(`\nReceitas recorrentes (${incomes.length}):`);
       incomes.slice(0, 5).forEach(i =>
-        parts.push(`  - ${i.source}: ${fmt(i.amount)}`));
+        parts.push(`  - ${i.description}: ${fmt(i.amount)}`));
     }
 
     return parts.join('\n');
