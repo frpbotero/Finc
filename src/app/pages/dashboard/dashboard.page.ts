@@ -2,6 +2,7 @@ import {
   Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy
 } from '@angular/core';
 import { FinancialService } from '../../services/financial.service';
+import { BackupService } from '../../services/backup.service';
 import { Transaction } from '../../models/models';
 import { Chart, registerables } from 'chart.js';
 
@@ -14,6 +15,7 @@ Chart.register(...registerables);
 })
 export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('flowChart') flowChartRef!: ElementRef;
+  @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
   currentMonth = '';
   summary = { totalIncome: 0, totalExpenses: 0, totalPaid: 0, totalPending: 0, balance: 0 };
@@ -21,7 +23,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   pendingItems: Transaction[] = [];
   private chart: Chart | null = null;
 
-  constructor(private fin: FinancialService) {}
+  constructor(
+    private fin: FinancialService,
+    private backup: BackupService,
+  ) {}
 
   ngOnInit() {
     this.currentMonth = this.fin.getCurrentMonth();
@@ -47,7 +52,6 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     this.debtPercentage = this.summary.totalIncome > 0
       ? Math.min(100, Math.round((this.summary.totalExpenses / this.summary.totalIncome) * 100))
       : 0;
-
     this.pendingItems = this.fin.getTransactions(this.currentMonth)
       .filter(t => t.status === 'pending' && t.kind === 'expense')
       .slice(0, 5);
@@ -56,11 +60,9 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   buildChart() {
     const el = this.flowChartRef?.nativeElement;
     if (!el) return;
-
     const months = this.getLast6Months();
     const incomes  = months.map(m => this.fin.getMonthlySummary(m).totalIncome);
     const expenses = months.map(m => this.fin.getMonthlySummary(m).totalExpenses);
-
     this.chart?.destroy();
     this.chart = new Chart(el, {
       type: 'bar',
@@ -89,7 +91,23 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
     return months;
   }
 
-  get formattedMonth() { return this.fin.formatMonth(this.currentMonth); }
+  openBackup() {
+    this.backup.showMenu(this.fileInputRef.nativeElement);
+  }
 
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    input.value = '';
+    try {
+      await this.backup.import(text);
+    } catch (e: any) {
+      console.error('[Backup] import error', e);
+    }
+  }
+
+  get formattedMonth() { return this.fin.formatMonth(this.currentMonth); }
   fmt(v: number) { return this.fin.formatCurrency(v); }
 }

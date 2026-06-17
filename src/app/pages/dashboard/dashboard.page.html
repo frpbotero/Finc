@@ -1,8 +1,17 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Meu Cenário Financeiro</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openBackup()" title="Backup">
+        <ion-icon slot="icon-only" name="cloud-upload-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<!-- Input oculto para importar arquivo -->
+<input #fileInput type="file" accept=".json" style="display:none"
+  (change)="onFileSelected($event)">
 
 <ion-content>
   <div class="page-pad">
