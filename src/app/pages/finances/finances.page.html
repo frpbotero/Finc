@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Finanças</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip class="month-chip">{{ formattedMonth }}</ion-chip>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="fin-wrap">
+
+    <!-- Resumo do mês -->
+    <div class="summary-bar">
+      <div class="sum-item">
+        <span class="sum-lbl">Receita</span>
+        <span class="sum-val income">{{ fmt(summary.totalIncome) }}</span>
+      </div>
+      <div class="sum-divider"></div>
+      <div class="sum-item">
+        <span class="sum-lbl">Despesas</span>
+        <span class="sum-val expense">{{ fmt(summary.totalExpenses) }}</span>
+      </div>
+      <div class="sum-divider"></div>
+      <div class="sum-item">
+        <span class="sum-lbl">Saldo</span>
+        <span class="sum-val" [class.income]="summary.balance >= 0" [class.expense]="summary.balance < 0">
+          {{ fmt(summary.balance) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Seções -->
+    <div class="section-list">
+
+      <div class="section-card" (click)="go('accounts')">
+        <div class="sec-icon" style="background:#d8f3dc">
+          <ion-icon name="list-outline" style="color:#2d6a4f"></ion-icon>
+        </div>
+        <div class="sec-info">
+          <h3>Contas</h3>
+          <p>{{ accountsCount }} conta{{ accountsCount !== 1 ? 's' : '' }} ativa{{ accountsCount !== 1 ? 's' : '' }}
+            · {{ fmt(summary.totalExpenses) }} este mês</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="sec-arrow"></ion-icon>
+      </div>
+
+      <div class="section-card" (click)="go('monthly-flow')">
+        <div class="sec-icon" style="background:#dbeafe">
+          <ion-icon name="trending-up-outline" style="color:#1e40af"></ion-icon>
+        </div>
+        <div class="sec-info">
+          <h3>Fluxo Mensal</h3>
+          <p>{{ incomesCount }} receita{{ incomesCount !== 1 ? 's' : '' }}
+            · Pago {{ fmt(summary.totalPaid) }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="sec-arrow"></ion-icon>
+      </div>
+
+      <div class="section-card" (click)="go('debts')">
+        <div class="sec-icon" style="background:#fee2e2">
+          <ion-icon name="card-outline" style="color:#dc2626"></ion-icon>
+        </div>
+        <div class="sec-info">
+          <h3>Dívidas</h3>
+          <p>{{ debtsCount }} dívida{{ debtsCount !== 1 ? 's' : '' }} ativa{{ debtsCount !== 1 ? 's' : '' }}
+            · A pagar {{ fmt(summary.totalPending) }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="sec-arrow"></ion-icon>
+      </div>
+
+    </div>
+  </div>
+</ion-content>

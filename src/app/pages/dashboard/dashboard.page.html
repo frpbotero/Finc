@@ -1,12 +1,14 @@
 <ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>{{ greeting }}</ion-title>
+  <ion-toolbar color="primary" class="dash-toolbar">
+    <div class="dash-title-block">
+      <h1 class="dash-title">{{ greeting }}</h1>
+      <span class="dash-month">{{ formattedMonth }}</span>
+    </div>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="page-pad">
-    <p class="month-lbl">{{ formattedMonth }}</p>
 
     <!-- Saldo principal -->
     <ion-card class="balance-card">
@@ -32,7 +34,7 @@
       </ion-card-content>
     </ion-card>
 
-    <!-- Pago vs A pagar -->
+    <!-- Situação do mês -->
     <ion-card>
       <ion-card-header>
         <ion-card-subtitle>Situação do mês</ion-card-subtitle>
@@ -42,18 +44,22 @@
           <span class="status-lbl">Pago</span>
           <span class="status-val paid">{{ fmt(summary.totalPaid) }}</span>
         </div>
-        <div class="status-row">
+        <div class="prog-wrap" *ngIf="summary.totalExpenses > 0">
+          <div class="prog-fill paid-fill"
+            [style.width]="(summary.totalPaid / summary.totalExpenses * 100) + '%'"></div>
+        </div>
+        <div class="status-row" style="margin-top: 10px">
           <span class="status-lbl">A pagar</span>
           <span class="status-val pending">{{ fmt(summary.totalPending) }}</span>
         </div>
         <div class="prog-wrap" *ngIf="summary.totalExpenses > 0">
-          <div class="prog-fill"
-            [style.width]="(summary.totalPaid / summary.totalExpenses * 100) + '%'"></div>
+          <div class="prog-fill pending-fill"
+            [style.width]="(summary.totalPending / summary.totalExpenses * 100) + '%'"></div>
         </div>
       </ion-card-content>
     </ion-card>
 
-    <!-- Próximos a pagar -->
+    <!-- A pagar -->
     <ion-card *ngIf="pendingItems.length > 0">
       <ion-card-header>
         <ion-card-subtitle>A Pagar</ion-card-subtitle>
@@ -74,7 +80,7 @@
     </ion-card>
 
     <!-- Gráfico -->
-    <ion-card>
+    <ion-card class="chart-card">
       <ion-card-header>
         <ion-card-subtitle>Evolução 6 meses</ion-card-subtitle>
       </ion-card-header>
@@ -82,5 +88,14 @@
         <canvas #flowChart></canvas>
       </ion-card-content>
     </ion-card>
+
   </div>
+
+  <!-- FAB Finn IA -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="primary" (click)="openAssistant()" class="finn-fab">
+      <ion-icon name="sparkles-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
 </ion-content>

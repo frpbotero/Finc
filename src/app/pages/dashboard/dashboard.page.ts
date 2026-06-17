@@ -1,6 +1,7 @@
 import {
   Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { FinancialService } from '../../services/financial.service';
 import { UserService } from '../../services/user.service';
 import { Transaction } from '../../models/models';
@@ -25,6 +26,7 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private fin: FinancialService,
     private user: UserService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -88,6 +90,10 @@ export class DashboardPage implements OnInit, AfterViewInit, OnDestroy {
       months.push(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`);
     }
     return months;
+  }
+
+  openAssistant() {
+    this.router.navigate(['/tabs/assistant']);
   }
 
   get greeting() {
