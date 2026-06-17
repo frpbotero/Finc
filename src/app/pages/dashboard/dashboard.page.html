@@ -76,10 +76,21 @@
     <!-- Gráfico -->
     <ion-card>
       <ion-card-header>
-        <ion-card-subtitle>Evolução 6 meses</ion-card-subtitle>
+        <ion-segment [(ngModel)]="selectedView" (ionChange)="switchView()">
+          <ion-segment-button value="6months">
+            <ion-label>6 Meses</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="categories">
+            <ion-label>Categorias</ion-label>
+          </ion-segment-button>
+        </ion-segment>
       </ion-card-header>
       <ion-card-content>
-        <canvas #flowChart></canvas>
+        <canvas #flowChart *ngIf="selectedView === '6months'"></canvas>
+        <canvas #pieChart  *ngIf="selectedView === 'categories'"></canvas>
+        <p class="pie-empty" *ngIf="selectedView === 'categories' && pieEmpty">
+          Sem despesas no mês atual.
+        </p>
       </ion-card-content>
     </ion-card>
   </div>

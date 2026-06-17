@@ -52,3 +52,11 @@
   border-radius: 3px;
   transition: width .3s ease;
 }
+
+.pie-empty {
+  text-align: center;
+  color: var(--ion-color-medium);
+  font-size: 14px;
+  padding: 24px 0;
+  margin: 0;
+}
