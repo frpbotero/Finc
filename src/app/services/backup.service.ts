@@ -21,6 +21,8 @@ export class BackupService {
     private toastCtrl: ToastController,
   ) {}
 
+  // ---- Export ----
+
   async export(): Promise<void> {
     const data: BackupData = {
       version: 1,
@@ -43,7 +45,7 @@ export class BackupService {
         await Share.share({ title: 'Backup financeiro', url: uri, dialogTitle: 'Salvar backup' });
       } catch (e) {
         console.error('[Backup] export error', e);
-        this.showToast('Erro ao exportar backup');
+        await this.toast('Erro ao exportar backup', 'danger');
       }
     } else {
       const blob = new Blob([json], { type: 'application/json' });
@@ -55,11 +57,13 @@ export class BackupService {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      this.showToast('Backup exportado com sucesso');
+      await this.toast('Backup exportado com sucesso!');
     }
   }
 
-  async import(jsonText: string): Promise<void> {
+  // ---- Import com verificação inteligente ----
+
+  async importWithSmartCheck(jsonText: string): Promise<void> {
     let data: BackupData;
     try {
       data = JSON.parse(jsonText);
@@ -69,44 +73,51 @@ export class BackupService {
     if (!data.version || !Array.isArray(data.accounts)) {
       throw new Error('Formato de backup inválido');
     }
-    const confirm = await this.alertCtrl.create({
-      header: 'Confirmar importação',
-      message: `Isso irá sobrescrever TODOS os dados atuais com o backup de ${data.exportDate?.slice(0, 10) ?? 'data desconhecida'}. Continuar?`,
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Importar',
-          handler: async () => {
-            await this.fin.restoreFromBackup(data);
-            this.showToast('Backup importado com sucesso. Reabra o app.');
+
+    if (this.hasExistingData()) {
+      const dateStr = data.exportDate?.slice(0, 10) ?? 'data desconhecida';
+      const alert = await this.alertCtrl.create({
+        header: '⚠️ Atenção',
+        message:
+          `Você já possui dados cadastrados. Importar o backup de <strong>${dateStr}</strong> irá apagar permanentemente todos os seus dados atuais.<br><br>Esta ação não pode ser desfeita.`,
+        cssClass: 'alert-danger',
+        buttons: [
+          { text: 'Cancelar', role: 'cancel' },
+          {
+            text: 'Apagar e importar',
+            role: 'destructive',
+            handler: async () => {
+              await this.doRestore(data);
+            },
           },
-        },
-      ],
-    });
-    await confirm.present();
+        ],
+      });
+      await alert.present();
+    } else {
+      await this.doRestore(data);
+    }
   }
 
-  async showMenu(fileInputEl: HTMLInputElement): Promise<void> {
-    const alert = await this.alertCtrl.create({
-      header: 'Backup de Dados',
-      message: 'Exporte para guardar seus dados ou importe um arquivo de backup anterior.',
-      buttons: [
-        {
-          text: 'Exportar',
-          handler: () => { this.export(); },
-        },
-        {
-          text: 'Importar arquivo',
-          handler: () => { fileInputEl.click(); },
-        },
-        { text: 'Cancelar', role: 'cancel' },
-      ],
-    });
-    await alert.present();
+  private async doRestore(data: BackupData): Promise<void> {
+    try {
+      await this.fin.restoreFromBackup(data);
+      await this.toast('Backup importado com sucesso! Recarregue o app.', 'success');
+    } catch {
+      await this.toast('Falha ao importar o backup.', 'danger');
+    }
   }
 
-  private async showToast(message: string): Promise<void> {
-    const t = await this.toastCtrl.create({ message, duration: 3000, position: 'bottom' });
+  private hasExistingData(): boolean {
+    return (
+      this.fin.getAccounts().length > 0 ||
+      this.fin.getRawTransactions().length > 0 ||
+      this.fin.getDebts().length > 0 ||
+      this.fin.getIncomes().length > 0
+    );
+  }
+
+  private async toast(message: string, color: 'success' | 'danger' | 'warning' = 'success'): Promise<void> {
+    const t = await this.toastCtrl.create({ message, duration: 3500, position: 'bottom', color });
     await t.present();
   }
 }
