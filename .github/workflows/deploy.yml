@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - claude/financial-scenario-app-7szegj
+      - main
 
 permissions:
   contents: write
