@@ -1,118 +1,41 @@
-.fin-wrap {
-  padding: 12px 12px 24px;
-}
-
-// ── Resumo do mês ──────────────────────────────────────────
-.summary-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--ion-card-background);
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.08);
-}
-
-.sum-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.sum-lbl {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .4px;
-  color: var(--ion-color-medium);
-  font-weight: 600;
-}
-
-.sum-val {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ion-text-color);
-
-  &.income  { color: var(--ion-color-success); }
-  &.expense { color: var(--ion-color-danger); }
-}
-
-.sum-divider {
-  width: 1px;
-  height: 32px;
-  background: rgba(var(--ion-color-medium-rgb, 146,148,156), .2);
-}
-
-// ── Section cards ──────────────────────────────────────────
-.section-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.section-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--ion-card-background);
-  border-radius: 14px;
-  padding: 16px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,.07);
-  transition: transform .1s, box-shadow .1s;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active {
-    transform: scale(.98);
-    box-shadow: 0 1px 3px rgba(0,0,0,.1);
-  }
-}
-
-.sec-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  flex-shrink: 0;
+// Reutiliza estilos do monthly-flow
+.month-nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  ion-icon { font-size: 22px; }
+  padding: 8px;
+  .month-txt { font-size: 17px; font-weight: 600; min-width: 110px; text-align: center; }
 }
 
-.sec-info {
-  flex: 1;
-  min-width: 0;
-
-  h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--ion-text-color);
-    margin: 0 0 3px;
-  }
-
-  p {
-    font-size: 12px;
-    color: var(--ion-color-medium);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0 8px;
+  gap: 0;
+  ion-card { margin: 4px; }
 }
 
-.sec-arrow {
-  font-size: 18px;
+.mini-card ion-card-content { padding: 10px 12px; }
+.mini-lbl { font-size: 10px; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: .4px; }
+.mini-val { font-size: 15px; font-weight: 700; margin-top: 3px; }
+
+.income  { color: var(--ion-color-success); }
+.expense { color: var(--ion-color-danger); }
+.paid    { color: var(--ion-color-success); }
+.pending { color: var(--ion-color-warning); }
+
+.diff-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .diff-lbl { font-size: 14px; color: var(--ion-color-medium); }
+  .diff-val { font-size: 20px; font-weight: 700; }
+}
+
+.pos .diff-val { color: var(--ion-color-success); }
+.neg .diff-val { color: var(--ion-color-danger); }
+
+.status-hint {
+  font-size: 11px;
   color: var(--ion-color-medium);
-  flex-shrink: 0;
-}
-
-// ── Month chip ─────────────────────────────────────────────
-.month-chip {
-  --color: rgba(255,255,255,.9);
-  --background: rgba(255,255,255,.15);
-  font-size: 12px;
-  height: 26px;
-  margin-right: 4px;
 }

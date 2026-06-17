@@ -327,9 +327,9 @@ export class FinancialService {
         financial_account_id: account.financial_account_id,
         month,
         amount: Number(account.default_amount || 0),
-        status: isIncome ? 'paid' : 'pending',
+        status: 'pending',
         kind: isIncome ? 'income' : 'expense',
-        notes: isIncome ? 'Receita recorrente' : 'Despesa fixa recorrente',
+        notes: isIncome ? 'Receita recorrente (a receber)' : 'Despesa fixa recorrente',
         generated_from_recurring: true,
       };
       transactions.push(transaction);

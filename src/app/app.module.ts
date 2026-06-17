@@ -17,6 +17,7 @@ import {
   chevronForwardOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
+  closeOutline,
   colorPaletteOutline,
   ellipseOutline,
   flashOutline,
@@ -27,10 +28,13 @@ import {
   personOutline,
   pricetagOutline,
   sendOutline,
+  settingsOutline,
   sparklesOutline,
   trashOutline,
   trendingUpOutline,
   walletOutline,
+  closeOutline,
+  settingsOutline,
 } from 'ionicons/icons';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -57,6 +61,8 @@ addIcons({
   'person-outline': personOutline,
   'send-outline': sendOutline,
   'sparkles-outline': sparklesOutline,
+  'close-outline': closeOutline,
+  'settings-outline': settingsOutline,
   'home-outline': homeOutline,
   'list-outline': listOutline,
   'pricetag-outline': pricetagOutline,
