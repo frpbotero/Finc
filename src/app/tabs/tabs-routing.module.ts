@@ -32,6 +32,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('../pages/simulator/simulator.module').then((m) => m.SimulatorPageModule),
       },
+      {
+        path: 'profile',
+        loadChildren: () =>
+          import('../pages/profile/profile.module').then((m) => m.ProfilePageModule),
+      },
       { path: '', redirectTo: '/tabs/dashboard', pathMatch: 'full' },
     ],
   },
