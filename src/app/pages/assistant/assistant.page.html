@@ -1,0 +1,100 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Finn · IA</ion-title>
+    <ion-buttons slot="end">
+      <ion-chip *ngIf="gemini.hasToken" [color]="usageColor" class="quota-chip">
+        <ion-icon name="flash-outline"></ion-icon>
+        <ion-label>{{ usage.dailyRemaining }}/{{ DAILY_LIMIT }}</ion-label>
+      </ion-chip>
+      <ion-button *ngIf="messages.length > 0" (click)="clearChat()" title="Limpar conversa">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content #content>
+
+  <!-- Sem token configurado -->
+  <div *ngIf="!gemini.hasToken" class="no-token-wrap">
+    <div class="no-token-card">
+      <ion-icon name="sparkles-outline" class="big-icon"></ion-icon>
+      <h2>Assistente Finn</h2>
+      <p>Configure sua chave de API do Google Gemini para ter um gestor financeiro com IA personalizado para seus dados.</p>
+      <ol class="steps">
+        <li>Acesse <strong>aistudio.google.com</strong></li>
+        <li>Crie uma chave de API gratuita</li>
+        <li>Cole na aba <strong>Perfil → Assistente IA</strong></li>
+      </ol>
+      <ion-button expand="block" routerLink="/tabs/profile">
+        <ion-icon slot="start" name="person-circle-outline"></ion-icon>
+        Ir para Perfil
+      </ion-button>
+    </div>
+  </div>
+
+  <!-- Chat -->
+  <div *ngIf="gemini.hasToken" class="chat-wrap">
+
+    <!-- Estado inicial -->
+    <div *ngIf="messages.length === 0 && !isLoading" class="welcome-wrap">
+      <div class="avatar-wrap">
+        <ion-icon name="sparkles-outline" class="avatar-icon"></ion-icon>
+      </div>
+      <h3>Olá! Sou o Finn 👋</h3>
+      <p>Seu assistente financeiro pessoal. Tenho acesso ao seu cenário atual e posso ajudar com análises, planos e dicas.</p>
+      <div class="quick-grid">
+        <button *ngFor="let qa of quickActions" class="quick-btn" (click)="quickAction(qa.prompt)">
+          {{ qa.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensagens -->
+    <div class="messages-list">
+      <div *ngFor="let msg of messages"
+           class="msg-row"
+           [class.user-row]="msg.role === 'user'"
+           [class.model-row]="msg.role === 'model'">
+        <div class="bubble" [class.user-bubble]="msg.role === 'user'" [class.model-bubble]="msg.role === 'model'">
+          <pre class="msg-text">{{ msg.text }}</pre>
+          <span class="msg-time">{{ msg.timestamp | date:'HH:mm' }}</span>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div *ngIf="isLoading" class="msg-row model-row">
+        <div class="bubble model-bubble typing-bubble">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <div #msgEnd></div>
+  </div>
+</ion-content>
+
+<!-- Footer com input -->
+<ion-footer *ngIf="gemini.hasToken">
+  <ion-toolbar class="input-bar">
+    <ion-input
+      [(ngModel)]="inputText"
+      placeholder="Pergunte ao Finn..."
+      [disabled]="isLoading"
+      (keyup.enter)="send()"
+      class="chat-input">
+    </ion-input>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="send()"
+        [disabled]="!inputText.trim() || isLoading"
+        color="primary"
+        fill="solid"
+        class="send-btn">
+        <ion-icon slot="icon-only" name="send-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

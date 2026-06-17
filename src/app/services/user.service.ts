@@ -6,6 +6,7 @@ export type ThemeId = 'green' | 'light' | 'dark' | 'blue' | 'purple';
 export interface UserPreferences {
   name: string;
   theme: ThemeId;
+  geminiToken?: string;
 }
 
 @Injectable({ providedIn: 'root' })

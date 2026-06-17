@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ToastController } from '@ionic/angular';
 import { UserService, ThemeId } from '../../services/user.service';
 import { BackupService } from '../../services/backup.service';
+import { GeminiService, DAILY_LIMIT } from '../../services/gemini.service';
 
 export interface ThemeOption {
   id: ThemeId;
@@ -20,6 +21,8 @@ export class ProfilePage implements OnInit {
 
   name = '';
   selectedTheme: ThemeId = 'green';
+  geminiToken = '';
+  readonly DAILY_LIMIT = DAILY_LIMIT;
 
   readonly themes: ThemeOption[] = [
     { id: 'green',  label: 'Verde',  color: '#2d6a4f', textColor: '#fff' },
@@ -33,12 +36,22 @@ export class ProfilePage implements OnInit {
     private userSvc: UserService,
     private backup: BackupService,
     private toastCtrl: ToastController,
+    public gemini: GeminiService,
   ) {}
 
   ngOnInit() {
     const prefs = this.userSvc.prefs;
     this.name = prefs.name;
     this.selectedTheme = prefs.theme;
+    this.geminiToken = prefs.geminiToken ?? '';
+  }
+
+  get usage() { return this.gemini.getUsage(); }
+
+  saveToken() {
+    const token = this.geminiToken.trim();
+    this.userSvc.save({ geminiToken: token });
+    this.showToast(token ? 'Token salvo! Acesse a aba IA para conversar.' : 'Token removido.', 'success');
   }
 
   saveName() {

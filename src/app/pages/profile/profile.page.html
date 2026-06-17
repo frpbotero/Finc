@@ -55,6 +55,40 @@
       </ion-card-content>
     </ion-card>
 
+    <!-- Assistente IA -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle class="section-title">
+          <ion-icon name="sparkles-outline"></ion-icon> Assistente IA (Gemini)
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="backup-desc">
+          Cole sua chave de API gratuita do Google Gemini.
+          Crie em <strong>aistudio.google.com</strong> → "Get API key".
+        </p>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label position="stacked">Chave de API</ion-label>
+            <ion-input
+              type="password"
+              [(ngModel)]="geminiToken"
+              placeholder="AIza..."
+              clearInput>
+            </ion-input>
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" (click)="saveToken()" class="save-btn">
+          <ion-icon slot="start" name="key-outline"></ion-icon>
+          Salvar token
+        </ion-button>
+        <div *ngIf="gemini.hasToken" class="token-status">
+          <ion-icon name="checkmark-circle-outline" color="success"></ion-icon>
+          <span>Token ativo · <strong>{{ usage.dailyRemaining }}/{{ DAILY_LIMIT }}</strong> requisições restantes hoje</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
     <!-- Backup -->
     <ion-card>
       <ion-card-header>
