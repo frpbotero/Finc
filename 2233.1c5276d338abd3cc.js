@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkapp=self.webpackChunkapp||[]).push([[2233],{2233:(d,n,h)=>{h.r(n),h.d(n,{Share:()=>s});const s=(0,h(5083).F3)("Share",{web:()=>h.e(1227).then(h.bind(h,1227)).then(t=>new t.ShareWeb)})}}]);
