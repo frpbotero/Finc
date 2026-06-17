@@ -1,0 +1,19 @@
+.rr {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px;
+  span:first-child { color: var(--ion-color-medium); }
+  span:last-child  { font-weight: 600; }
+  .danger  { color: var(--ion-color-danger); }
+  .success { color: var(--ion-color-success); }
+  &.hi { background: #f0fff4; margin: 0 -16px; padding: 6px 16px; }
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 16px;
+  ion-icon { font-size: 56px; margin-bottom: 12px; }
+  p { color: var(--ion-color-medium); line-height: 1.5; }
+}

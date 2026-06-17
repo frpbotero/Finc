@@ -1,0 +1,109 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Contas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="pickFinancialAccountType()" aria-label="Adicionar conta financeira">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <section class="quick-actions">
+    <ion-button size="small" fill="outline" (click)="pickFinancialAccountType()">
+      <ion-icon slot="start" name="wallet-outline"></ion-icon>
+      Conta financeira
+    </ion-button>
+    <ion-button size="small" fill="outline" (click)="addRecurringAccount('fixed')">
+      <ion-icon slot="start" name="home-outline"></ion-icon>
+      Despesa fixa
+    </ion-button>
+    <ion-button size="small" fill="outline" (click)="addRecurringAccount('income')">
+      <ion-icon slot="start" name="cash-outline"></ion-icon>
+      Receita recorrente
+    </ion-button>
+    <ion-button size="small" fill="outline" (click)="pickDebtType()">
+      <ion-icon slot="start" name="card-outline"></ion-icon>
+      Cartão/Dívida
+    </ion-button>
+  </section>
+
+  <ion-list-header>
+    <ion-label>
+      <ion-icon name="wallet-outline" class="grp-icon"></ion-icon>
+      Contas financeiras
+    </ion-label>
+  </ion-list-header>
+
+  <ion-list *ngIf="financialAccounts.length > 0">
+    <ion-item-sliding *ngFor="let account of financialAccounts">
+      <ion-item>
+        <ion-label>
+          <h3>{{ account.name }}</h3>
+          <p>Saldo inicial {{ fmt(account.opening_balance || 0) }}</p>
+        </ion-label>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="deleteFinancialAccount(account)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <ion-item *ngIf="financialAccounts.length === 0" lines="none" class="hint-item">
+    <ion-label color="medium">
+      Cadastre bancos, carteiras ou dinheiro para vincular aos lançamentos.
+    </ion-label>
+  </ion-item>
+
+  <div *ngFor="let group of groupedAccounts">
+    <ion-list-header>
+      <ion-label>
+        <ion-icon [name]="group.icon" class="grp-icon"></ion-icon>
+        {{ group.label }}
+      </ion-label>
+    </ion-list-header>
+
+    <ion-list>
+      <ion-item-sliding *ngFor="let account of group.items">
+        <ion-item button (click)="editTx(account)">
+          <ion-label>
+            <h3>{{ account.name }}</h3>
+            <p>
+              {{ account.default_amount ? fmt(account.default_amount) : 'Sem valor padrão' }}
+              <span *ngIf="account.due_day"> · vence dia {{ account.due_day }}</span>
+            </p>
+            <p class="linked-account">{{ getFinancialAccountName(account.financial_account_id) }}</p>
+          </ion-label>
+          <div slot="end" class="acct-end">
+            <span class="amt" [class.income]="account.type === 'income'" [class.filled]="getAmount(account.id) > 0">
+              {{ getAmount(account.id) > 0 ? fmt(getAmount(account.id)) : '—' }}
+            </span>
+            <ion-badge *ngIf="getStatus(account.id) === 'paid'" color="success">Pago</ion-badge>
+            <ion-badge *ngIf="getStatus(account.id) === 'pending'" color="warning">Pendente</ion-badge>
+          </div>
+        </ion-item>
+
+        <ion-item-options side="end">
+          <ion-item-option color="primary" (click)="pickFinancialAccountForRecurring(account)">
+            <ion-icon slot="icon-only" name="wallet-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option *ngIf="getStatus(account.id) && account.type !== 'income'" color="success" (click)="togglePaid(account)">
+            <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+          </ion-item-option>
+          <ion-item-option color="danger" (click)="deleteAccount(account)">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    </ion-list>
+  </div>
+
+  <div *ngIf="groupedAccounts.length === 0" class="empty">
+    <ion-icon name="albums-outline" color="medium"></ion-icon>
+    <p>Nenhuma despesa ou receita recorrente cadastrada.</p>
+    <ion-button (click)="addRecurringAccount('fixed')">Adicionar despesa fixa</ion-button>
+  </div>
+</ion-content>

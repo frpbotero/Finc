@@ -1,0 +1,54 @@
+.page-pad { padding: 8px 8px 0; }
+
+.month-lbl {
+  margin: 0 0 4px 8px;
+  font-size: 13px;
+  color: var(--ion-color-medium);
+}
+
+.balance-card { margin: 0 0 8px; }
+
+.balance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.bi {
+  display: flex;
+  flex-direction: column;
+
+  .lbl { font-size: 11px; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: .4px; }
+  .val { font-size: 16px; font-weight: 700; margin-top: 2px; }
+
+  &.income .val   { color: var(--ion-color-success); }
+  &.expense .val  { color: var(--ion-color-danger); }
+  &.positive .val { color: var(--ion-color-success); }
+  &.negative .val { color: var(--ion-color-danger); }
+  &.warn .val     { color: var(--ion-color-warning); }
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  .status-lbl { color: var(--ion-color-medium); font-size: 14px; }
+  .status-val { font-weight: 600; font-size: 14px; }
+  .paid    { color: var(--ion-color-success); }
+  .pending { color: var(--ion-color-warning); }
+}
+
+.prog-wrap {
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--ion-color-success);
+  border-radius: 3px;
+  transition: width .3s ease;
+}

@@ -1,0 +1,7 @@
+{
+  "name": "meu-cenario-financeiro",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

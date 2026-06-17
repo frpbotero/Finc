@@ -1,0 +1,46 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/financial-scenario-app-7szegj
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build -- --base-href /Finc/
+
+      - name: Prepare dist
+        run: |
+          touch www/.nojekyll
+          cp www/index.html www/404.html
+
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: www
+          branch: gh-pages
+          clean: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.build.result == 'success' }}
+    steps:
+      - run: echo "Deploy job placeholder (handled by build job above)"

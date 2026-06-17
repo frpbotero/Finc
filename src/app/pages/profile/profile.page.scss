@@ -1,0 +1,81 @@
+.profile-wrap {
+  padding: 8px 8px 24px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  ion-icon { font-size: 15px; }
+}
+
+.save-btn { margin-top: 12px; }
+
+// Tema
+.theme-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 0 8px;
+}
+
+.theme-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 10px;
+  border: 2px solid #dedede;
+  border-radius: 24px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  font-size: 13px;
+  color: var(--ion-text-color);
+  outline: none;
+
+  &.selected {
+    border-color: var(--ion-color-primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ion-color-primary) 20%, transparent);
+  }
+
+  .theme-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  }
+
+  .theme-label { font-weight: 500; }
+
+  .check {
+    font-size: 16px;
+    color: var(--ion-color-primary);
+  }
+}
+
+// Backup
+.backup-desc {
+  font-size: 13px;
+  color: var(--ion-color-medium);
+  margin: 0 0 14px;
+  line-height: 1.5;
+  code { background: rgba(0,0,0,.06); padding: 1px 4px; border-radius: 3px; }
+}
+
+.backup-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ion-color-medium);
+  line-height: 1.5;
+  ion-icon { flex-shrink: 0; margin-top: 1px; }
+}
+
+.mt8 { margin-top: 8px; }

@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Meu Perfil</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="profile-wrap">
+
+    <!-- Identificação -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle class="section-title">
+          <ion-icon name="person-outline"></ion-icon> Identificação
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item>
+            <ion-label position="stacked">Seu nome</ion-label>
+            <ion-input
+              [(ngModel)]="name"
+              placeholder="Ex: João Silva"
+              clearInput
+              (keyup.enter)="saveName()">
+            </ion-input>
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" (click)="saveName()" class="save-btn">
+          <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+          Salvar nome
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Tema -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle class="section-title">
+          <ion-icon name="color-palette-outline"></ion-icon> Tema de cores
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="theme-grid">
+          <button
+            *ngFor="let t of themes"
+            class="theme-chip"
+            [class.selected]="selectedTheme === t.id"
+            (click)="selectTheme(t.id)">
+            <span class="theme-dot" [style.background]="t.color"></span>
+            <span class="theme-label">{{ t.label }}</span>
+            <ion-icon *ngIf="selectedTheme === t.id" name="checkmark-circle" class="check"></ion-icon>
+          </button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Backup -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle class="section-title">
+          <ion-icon name="cloud-upload-outline"></ion-icon> Backup de dados
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p class="backup-desc">
+          Exporte todos os seus dados para um arquivo <code>.json</code>.
+          Guarde-o e use-o para restaurar no futuro.
+        </p>
+
+        <ion-button expand="block" (click)="exportBackup()">
+          <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+          Exportar backup
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" (click)="triggerImport()" class="mt8">
+          <ion-icon slot="start" name="cloud-download-outline"></ion-icon>
+          Importar backup
+        </ion-button>
+
+        <p class="backup-warn">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          Ao importar, se você tiver dados atuais, será solicitada uma confirmação antes de sobrescrever.
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+  <!-- Input oculto para seleção de arquivo -->
+  <input #fileInput type="file" accept=".json" style="display:none" (change)="onFileSelected($event)">
+</ion-content>
