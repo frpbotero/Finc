@@ -17,7 +17,7 @@ interface UsageRecord {
 export const DAILY_LIMIT = 1500;
 export const MINUTE_LIMIT = 15;
 
-const MODEL = 'gemini-1.5-flash-latest';
+const MODEL = 'gemini-3.1-flash-lite';
 const USAGE_KEY = 'mcf_gemini_usage';
 
 @Injectable({ providedIn: 'root' })
@@ -108,9 +108,7 @@ export class GeminiService {
     if (usage.minuteRemaining === 0)
       throw new Error('Muitas requisições! Aguarde alguns segundos e tente novamente.');
 
-    const systemPrompt = `Você é "Finn", assistente financeiro pessoal do usuário. Responda SEMPRE em português do Brasil. Seja objetivo, empático e prático. Use os dados financeiros abaixo para dar conselhos personalizados. Não invente números que não estão no contexto.
-
-${this.buildFinancialContext()}`;
+    const systemPrompt = `Você é "Finn", assistente financeiro pessoal do usuário. Responda SEMPRE em português do Brasil. Seja objetivo, empático e prático. Use os dados financeiros abaixo para dar conselhos personalizados. Não invente números que não estão no contexto.\n\n${this.buildFinancialContext()}`;
 
     this.apiHistory.push({ role: 'user', parts: [{ text: userText }] });
 
