@@ -60,25 +60,35 @@
     </ion-button>
   </ion-list-header>
   <ion-list>
-    <ion-item-sliding *ngFor="let i of incomes">
-      <ion-item-options side="start" *ngIf="i.source === 'manual'">
-        <ion-item-option color="primary" (click)="editIncome(i)">
-          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-      <ion-item>
+    <!-- Receitas manuais: com gestos de arrastar -->
+    <ng-container *ngFor="let i of incomes">
+      <ion-item-sliding *ngIf="i.source === 'manual'">
+        <ion-item-options side="start">
+          <ion-item-option color="primary" (click)="editIncome(i)">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+        <ion-item>
+          <ion-label><h3>{{ i.description }}</h3></ion-label>
+          <ion-note slot="end" color="success">{{ fmt(i.amount) }}</ion-note>
+        </ion-item>
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="deleteIncome(i)">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+
+      <!-- Receitas recorrentes: somente leitura -->
+      <ion-item *ngIf="i.source === 'recurring'">
         <ion-label>
           <h3>{{ i.description }}</h3>
-          <p *ngIf="i.source === 'recurring'">Receita recorrente</p>
+          <p>Receita recorrente</p>
         </ion-label>
         <ion-note slot="end" color="success">{{ fmt(i.amount) }}</ion-note>
       </ion-item>
-      <ion-item-options side="end" *ngIf="i.source === 'manual'">
-        <ion-item-option color="danger" (click)="deleteIncome(i)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+    </ng-container>
+
     <ion-item *ngIf="incomes.length === 0">
       <ion-label color="medium"><i>Nenhuma receita</i></ion-label>
     </ion-item>
