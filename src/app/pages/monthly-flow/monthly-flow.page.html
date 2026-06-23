@@ -61,19 +61,10 @@
   </ion-list-header>
   <ion-list>
     <ng-container *ngFor="let i of incomes">
-      <!-- Receita manual: arrastável -->
       <div *ngIf="i.source === 'manual'" class="swipe-wrap"
            (touchstart)="swipeStart($event, i.id)"
            (touchmove)="swipeMove($event)"
            (touchend)="swipeEnd(i.id, i, 'income')">
-        <div class="swipe-reveal swipe-reveal--left">
-          <ion-icon name="create-outline"></ion-icon>
-          <span>Editar</span>
-        </div>
-        <div class="swipe-reveal swipe-reveal--right">
-          <ion-icon name="trash-outline"></ion-icon>
-          <span>Excluir</span>
-        </div>
         <div class="swipe-body"
              [style.transform]="'translateX(' + swipeX(i.id) + 'px)'"
              [style.transition]="swipeTrans(i.id)">
@@ -83,7 +74,6 @@
           </ion-item>
         </div>
       </div>
-      <!-- Receita recorrente: somente leitura -->
       <ion-item *ngIf="i.source === 'recurring'">
         <ion-label>
           <h3>{{ i.description }}</h3>
@@ -104,14 +94,6 @@
          (touchstart)="swipeStart($event, t.id)"
          (touchmove)="swipeMove($event)"
          (touchend)="swipeEnd(t.id, t, 'expense')">
-      <div class="swipe-reveal swipe-reveal--left">
-        <ion-icon name="create-outline"></ion-icon>
-        <span>Editar</span>
-      </div>
-      <div class="swipe-reveal swipe-reveal--right">
-        <ion-icon name="trash-outline"></ion-icon>
-        <span>Excluir</span>
-      </div>
       <div class="swipe-body"
            [style.transform]="'translateX(' + swipeX(t.id) + 'px)'"
            [style.transition]="swipeTrans(t.id)">
