@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController, ToastController } from '@ionic/angular';
 import { FinancialService } from '../../services/financial.service';
-import { Account, FinancialAccount, Transaction } from '../../models/models';
+import { Account, FinancialAccount, Income, Transaction } from '../../models/models';
 
 export interface IncomeRow {
   id: string;
@@ -95,6 +95,75 @@ export class FinancesPage {
     if (income.source !== 'manual') return;
     this.fin.deleteIncome(income.id);
     this.load();
+  }
+
+  async editManualIncome(income: IncomeRow) {
+    if (income.source !== 'manual') return;
+    const a = await this.alert.create({
+      header: 'Editar receita',
+      inputs: [
+        { name: 'description', type: 'text', placeholder: 'Descrição', value: income.description },
+        { name: 'amount', type: 'number', placeholder: 'Valor (R$)', value: income.amount.toString() },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Salvar',
+          handler: (d: { description: string; amount: string }) => {
+            if (!d.description?.trim() || !Number(d.amount || 0)) return false;
+            this.fin.updateIncome({
+              id: income.id,
+              month: this.currentMonth,
+              description: d.description.trim(),
+              amount: Number(d.amount),
+              recurring: false,
+            } as Income);
+            this.load();
+            return true;
+          },
+        },
+      ],
+    });
+    await a.present();
+  }
+
+  async editExpense(t: Transaction) {
+    const a = await this.alert.create({
+      header: t.account_name || 'Editar despesa',
+      inputs: [
+        { name: 'amount', type: 'number', placeholder: 'Valor (R$)', value: t.amount.toString() },
+        { name: 'notes', type: 'text', placeholder: 'Observação', value: t.notes ?? '' },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Salvar',
+          handler: (d: { amount: string; notes: string }) => {
+            if (!Number(d.amount || 0)) return false;
+            this.fin.updateTransaction({ ...t, amount: Number(d.amount), notes: d.notes || undefined });
+            this.load();
+            return true;
+          },
+        },
+      ],
+    });
+    await a.present();
+  }
+
+  async deleteExpense(t: Transaction) {
+    const a = await this.alert.create({
+      header: 'Remover lançamento',
+      message: `Remover "${t.account_name}" de ${this.formattedMonth}?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Remover',
+          role: 'destructive',
+          handler: () => { this.fin.deleteTransaction(t.id); this.load(); },
+        },
+      ],
+    });
+    await a.present();
   }
 
   // ── FAB "+" ────────────────────────────────────────────────
