@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController, ToastController } from '@ionic/angular';
+import { CdkDragEnd } from '@angular/cdk/drag-drop';
 import { FinancialService } from '../../services/financial.service';
 import { Account, FinancialAccount, Income, Transaction } from '../../models/models';
 
@@ -31,6 +32,8 @@ export class FinancesPage {
   incomes: IncomeRow[] = [];
   expenses: Transaction[] = [];
   private financialAccounts: FinancialAccount[] = [];
+
+  readonly SWIPE_THRESHOLD = 70;
 
   constructor(
     private fin: FinancialService,
@@ -78,6 +81,21 @@ export class FinancesPage {
     const d = new Date(y, m - 1 + delta, 1);
     this.currentMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     this.load();
+  }
+
+  onIncomeDragEnded(event: CdkDragEnd, income: IncomeRow) {
+    const x = event.distance.x;
+    event.source.reset();
+    if (income.source !== 'manual') return;
+    if (x > this.SWIPE_THRESHOLD) void this.editManualIncome(income);
+    else if (x < -this.SWIPE_THRESHOLD) this.deleteManualIncome(income);
+  }
+
+  onExpenseDragEnded(event: CdkDragEnd, t: Transaction) {
+    const x = event.distance.x;
+    event.source.reset();
+    if (x > this.SWIPE_THRESHOLD) void this.editExpense(t);
+    else if (x < -this.SWIPE_THRESHOLD) void this.deleteExpense(t);
   }
 
   toggleExpense(t: Transaction) {

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AlertController } from '@ionic/angular';
+import { CdkDragEnd } from '@angular/cdk/drag-drop';
 import { FinancialService } from '../../services/financial.service';
 import { Account, FinancialAccount, Transaction } from '../../models/models';
 
@@ -43,7 +44,22 @@ export class AccountsPage {
     { label: 'Parcelamentos', type: 'installment', icon: 'pricetag-outline' },
   ];
 
+  readonly SWIPE_THRESHOLD = 70;
+
   constructor(private fin: FinancialService, private alert: AlertController) {}
+
+  onFinancialAccountDragEnded(event: CdkDragEnd, account: FinancialAccount) {
+    const x = event.distance.x;
+    event.source.reset();
+    if (x < -this.SWIPE_THRESHOLD) void this.deleteFinancialAccount(account);
+  }
+
+  onRecurringAccountDragEnded(event: CdkDragEnd, account: Account) {
+    const x = event.distance.x;
+    event.source.reset();
+    if (x > this.SWIPE_THRESHOLD) void this.editTx(account);
+    else if (x < -this.SWIPE_THRESHOLD) void this.deleteAccount(account);
+  }
 
   ionViewWillEnter() {
     this.currentMonth = this.fin.getCurrentMonth();

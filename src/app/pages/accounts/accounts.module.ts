@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { AccountsPage } from './accounts.page';
 
 @NgModule({
   imports: [
-    CommonModule, FormsModule, IonicModule,
+    CommonModule, FormsModule, IonicModule, DragDropModule,
     RouterModule.forChild([{ path: '', component: AccountsPage }]),
   ],
   declarations: [AccountsPage],
