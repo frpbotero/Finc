@@ -85,10 +85,94 @@ export class MonthlyFlowPage {
     await a.present();
   }
 
-  deleteIncome(income: IncomeRow) {
+  async editIncome(income: IncomeRow) {
     if (income.source !== 'manual') return;
-    this.fin.deleteIncome(income.id);
-    this.load();
+    const a = await this.alert.create({
+      header: 'Editar Receita',
+      inputs: [
+        { name: 'description', type: 'text',   placeholder: 'Descrição', value: income.description },
+        { name: 'amount',      type: 'number', placeholder: 'Valor (R$)', value: income.amount },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Salvar',
+          handler: (d) => {
+            if (!d.amount) return false;
+            const all = this.fin.getIncomes();
+            const existing = all.find(i => i.id === income.id);
+            if (existing) {
+              this.fin.updateIncome({ ...existing, description: d.description || existing.description, amount: +d.amount });
+            }
+            this.load();
+            return true;
+          },
+        },
+      ],
+    });
+    await a.present();
+  }
+
+  async deleteIncome(income: IncomeRow) {
+    if (income.source !== 'manual') return;
+    const a = await this.alert.create({
+      header: 'Excluir Receita',
+      message: `Deseja excluir "${income.description}"?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Excluir',
+          role: 'destructive',
+          handler: () => {
+            this.fin.deleteIncome(income.id);
+            this.load();
+          },
+        },
+      ],
+    });
+    await a.present();
+  }
+
+  async editExpense(t: Transaction) {
+    const a = await this.alert.create({
+      header: 'Editar Despesa',
+      inputs: [
+        { name: 'amount', type: 'number', placeholder: 'Valor (R$)', value: t.amount },
+        { name: 'notes',  type: 'text',   placeholder: 'Observação', value: t.notes || '' },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Salvar',
+          handler: (d) => {
+            if (!d.amount) return false;
+            this.fin.updateTransaction({ ...t, amount: +d.amount, notes: d.notes || undefined });
+            this.load();
+            return true;
+          },
+        },
+      ],
+    });
+    await a.present();
+  }
+
+  async deleteExpense(t: Transaction) {
+    const a = await this.alert.create({
+      header: 'Excluir Despesa',
+      message: `Deseja excluir "${t.account_name}"?`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Excluir',
+          role: 'destructive',
+          handler: () => {
+            this.fin.deleteTransaction(t.id);
+            this.load();
+          },
+        },
+      ],
+    });
+    await a.present();
   }
 
   get formattedMonth() { return this.fin.formatMonth(this.currentMonth); }
