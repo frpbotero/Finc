@@ -46,3 +46,6 @@ Thumbs.db
 # Capacitor
 /android
 /ios
+
+# Angular build cache
+/.angular
