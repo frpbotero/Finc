@@ -1,8 +1,0 @@
-{
-  "framework": null,
-  "buildCommand": "echo 'Pre-built'",
-  "outputDirectory": ".",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
