@@ -60,26 +60,30 @@
     </ion-button>
   </ion-list-header>
   <ion-list>
-    <!-- Receitas manuais: com gestos de arrastar -->
     <ng-container *ngFor="let i of incomes">
-      <ion-item-sliding *ngIf="i.source === 'manual'">
-        <ion-item-options side="start">
-          <ion-item-option color="primary" (click)="editIncome(i)">
-            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-        <ion-item>
-          <ion-label><h3>{{ i.description }}</h3></ion-label>
-          <ion-note slot="end" color="success">{{ fmt(i.amount) }}</ion-note>
-        </ion-item>
-        <ion-item-options side="end">
-          <ion-item-option color="danger" (click)="deleteIncome(i)">
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-item-option>
-        </ion-item-options>
-      </ion-item-sliding>
-
-      <!-- Receitas recorrentes: somente leitura -->
+      <!-- Receita manual: arrastável -->
+      <div *ngIf="i.source === 'manual'" class="swipe-wrap"
+           (touchstart)="swipeStart($event, i.id)"
+           (touchmove)="swipeMove($event)"
+           (touchend)="swipeEnd(i.id, i, 'income')">
+        <div class="swipe-reveal swipe-reveal--left">
+          <ion-icon name="create-outline"></ion-icon>
+          <span>Editar</span>
+        </div>
+        <div class="swipe-reveal swipe-reveal--right">
+          <ion-icon name="trash-outline"></ion-icon>
+          <span>Excluir</span>
+        </div>
+        <div class="swipe-body"
+             [style.transform]="'translateX(' + swipeX(i.id) + 'px)'"
+             [style.transition]="swipeTrans(i.id)">
+          <ion-item>
+            <ion-label><h3>{{ i.description }}</h3></ion-label>
+            <ion-note slot="end" color="success">{{ fmt(i.amount) }}</ion-note>
+          </ion-item>
+        </div>
+      </div>
+      <!-- Receita recorrente: somente leitura -->
       <ion-item *ngIf="i.source === 'recurring'">
         <ion-label>
           <h3>{{ i.description }}</h3>
@@ -88,7 +92,6 @@
         <ion-note slot="end" color="success">{{ fmt(i.amount) }}</ion-note>
       </ion-item>
     </ng-container>
-
     <ion-item *ngIf="incomes.length === 0">
       <ion-label color="medium"><i>Nenhuma receita</i></ion-label>
     </ion-item>
@@ -97,35 +100,40 @@
   <!-- Despesas -->
   <ion-list-header><ion-label>Despesas</ion-label></ion-list-header>
   <ion-list>
-    <ion-item-sliding *ngFor="let t of expenses">
-      <ion-item-options side="start">
-        <ion-item-option color="primary" (click)="editExpense(t)">
-          <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-      <ion-item button (click)="toggleStatus(t)">
-        <ion-icon
-          slot="start"
-          [name]="t.status === 'paid' ? 'checkmark-circle' : 'ellipse-outline'"
-          [color]="t.status === 'paid' ? 'success' : 'medium'">
-        </ion-icon>
-        <ion-label>
-          <h3>{{ t.account_name }}</h3>
-          <p>
-            <span *ngIf="t.notes">{{ t.notes }}</span>
-            <span *ngIf="t.financial_account_name"> · {{ t.financial_account_name }}</span>
-          </p>
-        </ion-label>
-        <ion-note slot="end" [color]="t.status === 'paid' ? 'medium' : 'danger'">
-          {{ fmt(t.amount) }}
-        </ion-note>
-      </ion-item>
-      <ion-item-options side="end">
-        <ion-item-option color="danger" (click)="deleteExpense(t)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
+    <div class="swipe-wrap" *ngFor="let t of expenses"
+         (touchstart)="swipeStart($event, t.id)"
+         (touchmove)="swipeMove($event)"
+         (touchend)="swipeEnd(t.id, t, 'expense')">
+      <div class="swipe-reveal swipe-reveal--left">
+        <ion-icon name="create-outline"></ion-icon>
+        <span>Editar</span>
+      </div>
+      <div class="swipe-reveal swipe-reveal--right">
+        <ion-icon name="trash-outline"></ion-icon>
+        <span>Excluir</span>
+      </div>
+      <div class="swipe-body"
+           [style.transform]="'translateX(' + swipeX(t.id) + 'px)'"
+           [style.transition]="swipeTrans(t.id)">
+        <ion-item button (click)="onExpenseClick(t)">
+          <ion-icon
+            slot="start"
+            [name]="t.status === 'paid' ? 'checkmark-circle' : 'ellipse-outline'"
+            [color]="t.status === 'paid' ? 'success' : 'medium'">
+          </ion-icon>
+          <ion-label>
+            <h3>{{ t.account_name }}</h3>
+            <p>
+              <span *ngIf="t.notes">{{ t.notes }}</span>
+              <span *ngIf="t.financial_account_name"> · {{ t.financial_account_name }}</span>
+            </p>
+          </ion-label>
+          <ion-note slot="end" [color]="t.status === 'paid' ? 'medium' : 'danger'">
+            {{ fmt(t.amount) }}
+          </ion-note>
+        </ion-item>
+      </div>
+    </div>
     <ion-item *ngIf="expenses.length === 0">
       <ion-label color="medium"><i>Nenhuma despesa lançada</i></ion-label>
     </ion-item>

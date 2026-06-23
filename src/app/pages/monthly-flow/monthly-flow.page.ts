@@ -21,6 +21,16 @@ export class MonthlyFlowPage {
   incomes: IncomeRow[] = [];
   expenses: Transaction[] = [];
 
+  // ---- Swipe state ----
+  private swStartX = 0;
+  private swStartY = 0;
+  private swId = '';
+  private swDx: Record<string, number> = {};
+  private swAnim: Record<string, boolean> = {};
+  private swDirH: boolean | null = null;
+  private swWasGesture = false;
+  private readonly SW_THRESHOLD = 72;
+
   constructor(private fin: FinancialService, private alert: AlertController) {}
 
   ionViewWillEnter() {
@@ -45,7 +55,6 @@ export class MonthlyFlowPage {
         amount: t.amount,
         source: 'recurring' as const,
       }));
-
     this.incomes = [...manualIncomes, ...recurringIncomes];
     this.expenses = this.fin.getTransactions(this.currentMonth).filter(t => t.kind === 'expense');
   }
@@ -55,6 +64,72 @@ export class MonthlyFlowPage {
     const d = new Date(y, m - 1 + delta, 1);
     this.currentMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     this.load();
+  }
+
+  // ---- Swipe handlers ----
+
+  swipeStart(ev: TouchEvent, id: string) {
+    this.swStartX = ev.touches[0].clientX;
+    this.swStartY = ev.touches[0].clientY;
+    this.swId = id;
+    this.swDirH = null;
+    this.swWasGesture = false;
+    this.swAnim[id] = false;
+  }
+
+  swipeMove(ev: TouchEvent) {
+    const id = this.swId;
+    if (!id) return;
+    const dx = ev.touches[0].clientX - this.swStartX;
+    const dy = ev.touches[0].clientY - this.swStartY;
+    if (this.swDirH === null) {
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      this.swDirH = Math.abs(dx) > Math.abs(dy);
+    }
+    if (!this.swDirH) return;
+    this.swDx[id] = Math.max(-100, Math.min(100, dx));
+    if (Math.abs(this.swDx[id]) > 10) this.swWasGesture = true;
+  }
+
+  swipeEnd(id: string, item: IncomeRow | Transaction, type: 'income' | 'expense') {
+    const dx = this.swDx[id] || 0;
+    this.swAnim[id] = true;
+    this.swDx[id] = 0;
+    this.swId = '';
+
+    if (dx > this.SW_THRESHOLD) {
+      setTimeout(() => {
+        this.swAnim[id] = false;
+        type === 'income'
+          ? this.editIncome(item as IncomeRow)
+          : this.editExpense(item as Transaction);
+      }, 150);
+    } else if (dx < -this.SW_THRESHOLD) {
+      setTimeout(() => {
+        this.swAnim[id] = false;
+        type === 'income'
+          ? this.deleteIncome(item as IncomeRow)
+          : this.deleteExpense(item as Transaction);
+      }, 150);
+    } else {
+      setTimeout(() => { this.swAnim[id] = false; }, 250);
+    }
+  }
+
+  swipeX(id: string): number { return this.swDx[id] || 0; }
+
+  swipeTrans(id: string): string {
+    return this.swAnim[id] ? 'transform 0.2s ease' : 'none';
+  }
+
+  // ---- Expense click (marcar pago) — bloqueado após gesto ----
+
+  onExpenseClick(t: Transaction) {
+    if (this.swWasGesture) {
+      this.swWasGesture = false;
+      return;
+    }
+    this.toggleStatus(t);
   }
 
   toggleStatus(t: Transaction) {
@@ -99,8 +174,7 @@ export class MonthlyFlowPage {
           text: 'Salvar',
           handler: (d) => {
             if (!d.amount) return false;
-            const all = this.fin.getIncomes();
-            const existing = all.find(i => i.id === income.id);
+            const existing = this.fin.getIncomes().find(i => i.id === income.id);
             if (existing) {
               this.fin.updateIncome({ ...existing, description: d.description || existing.description, amount: +d.amount });
             }
