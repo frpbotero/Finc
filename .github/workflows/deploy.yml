@@ -30,6 +30,7 @@ jobs:
         run: |
           touch www/.nojekyll
           cp www/index.html www/404.html
+          echo '{"framework":null,"buildCommand":"echo pre-built","outputDirectory":".","rewrites":[{"source":"/(.*)","destination":"/index.html"}]}' > www/vercel.json
 
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
