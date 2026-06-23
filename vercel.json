@@ -1,0 +1,1 @@
+{"framework":null,"buildCommand":"echo pre-built","outputDirectory":".","rewrites":[{"source":"/(.*)","destination":"/index.html"}]}
